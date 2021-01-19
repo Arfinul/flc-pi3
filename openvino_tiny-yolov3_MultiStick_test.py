@@ -12,27 +12,12 @@ yolo_scale_13 = 13
 yolo_scale_26 = 26
 yolo_scale_52 = 52
 
-classes = 80
+classes = 7
 coords = 4
 num = 3
 anchors = [10,14, 23,27, 37,58, 81,82, 135,169, 344,319]
 
-LABELS = ("person", "bicycle", "car", "motorbike", "aeroplane",
-          "bus", "train", "truck", "boat", "traffic light",
-          "fire hydrant", "stop sign", "parking meter", "bench", "bird",
-          "cat", "dog", "horse", "sheep", "cow",
-          "elephant", "bear", "zebra", "giraffe", "backpack",
-          "umbrella", "handbag", "tie", "suitcase", "frisbee",
-          "skis", "snowboard", "sports ball", "kite", "baseball bat",
-          "baseball glove", "skateboard", "surfboard","tennis racket", "bottle",
-          "wine glass", "cup", "fork", "knife", "spoon",
-          "bowl", "banana", "apple", "sandwich", "orange",
-          "broccoli", "carrot", "hot dog", "pizza", "donut",
-          "cake", "chair", "sofa", "pottedplant", "bed",
-          "diningtable", "toilet", "tvmonitor", "laptop", "mouse",
-          "remote", "keyboard", "cell phone", "microwave", "oven",
-          "toaster", "sink", "refrigerator", "book", "clock",
-          "vase", "scissors", "teddy bear", "hair drier", "toothbrush")
+LABELS = ("1LB", "2LB", "3LB", "1Banjhi", "2Banjhi", "Coarse", "Cluster")
 
 label_text_color = (255, 255, 255)
 label_background_color = (125, 175, 75)
