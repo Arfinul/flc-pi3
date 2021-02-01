@@ -22,7 +22,7 @@ LABELS = ("1LB", "2LB", "3LB", "1Banjhi", "2Banjhi", "Coarse", "Cluster")
 label_text_color = (255, 255, 255)
 label_background_color = (125, 175, 75)
 box_color = (255, 128, 0)
-box_thickness = 3
+box_thickness = 2
 
 processes = []
 
@@ -186,9 +186,9 @@ def camThread(LABELS, results, frameBuffer, camera_width, camera_height, vidfps)
                         label_text = LABELS[label] + " (" + "{:.1f}".format(confidence * 100) + "%)"
                         cv2.rectangle(color_image, (obj.xmin, obj.ymin), (obj.xmax, obj.ymax), box_color, box_thickness)
                         cv2.putText(color_image, label_text, (obj.xmin, obj.ymin - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.6, label_text_color, 1)
-
-        cv2.putText(color_image, fps,       (width-170,15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (38,0,255), 1, cv2.LINE_AA)
-        cv2.putText(color_image, detectfps, (width-170,30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (38,0,255), 1, cv2.LINE_AA)
+        cv2.rectangle(color_image, (230, 0),(350, 35), (0,0,0), -1)
+        cv2.putText(color_image, fps,       (width-120,15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,255), 1, cv2.LINE_AA)
+        cv2.putText(color_image, detectfps, (width-120,30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,255), 1, cv2.LINE_AA)
         cv2.imshow(window_name, cv2.resize(color_image, (width, height)))
 
         if cv2.waitKey(wait_key_time)&0xFF == ord('q'):
@@ -197,8 +197,8 @@ def camThread(LABELS, results, frameBuffer, camera_width, camera_height, vidfps)
         ## Print FPS
         framecount += 1
         if framecount >= 15:
-            fps       = "(Playback) {:.1f} FPS".format(time1/15)
-            detectfps = "(Detection) {:.1f} FPS".format(detectframecount/time2)
+            fps       = "VID FPS :{:.1f}".format(time1/15)
+            detectfps = "NCS FPS:{:.1f}".format(detectframecount/time2)
             framecount = 0
             detectframecount = 0
             time1 = 0
@@ -348,9 +348,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     number_of_ncs = args.number_of_ncs
-    camera_width = int(cv2.VideoCapture(0).get(cv2.CAP_PROP_FRAME_WIDTH))
-    camera_height = int(cv2.VideoCapture(0).get(cv2.CAP_PROP_FRAME_HEIGHT))
-    vidfps = 30
+    #camera_width = int(cv2.VideoCapture(0).get(cv2.CAP_PROP_FRAME_WIDTH))
+    #camera_height = int(cv2.VideoCapture(0).get(cv2.CAP_PROP_FRAME_HEIGHT))
+    camera_width = 416
+    camera_height= 416
+    vidfps = 35
 
     try:
 
