@@ -192,7 +192,8 @@ def camThread(LABELS, results, frameBuffer, camera_width, camera_height, vidfps)
         cv2.imshow(window_name, cv2.resize(color_image, (width, height)))
 
         if cv2.waitKey(wait_key_time)&0xFF == ord('q'):
-            sys.exit(0)
+            #sys.exit(0)
+            break
 
         ## Print FPS
         framecount += 1
@@ -207,6 +208,9 @@ def camThread(LABELS, results, frameBuffer, camera_width, camera_height, vidfps)
         elapsedTime = t2-t1
         time1 += 1/elapsedTime
         time2 += elapsedTime
+
+    cam.release()
+    cv2.destroyAllWindows()
 
 
 # l = Search list
@@ -276,7 +280,7 @@ class NcsWorker(object):
 
     def predict_async(self):
         try:
-
+            start_pred = time.time()
             if self.frameBuffer.empty():
                 return
 
@@ -323,6 +327,7 @@ class NcsWorker(object):
                 self.inferred_request[dev] = 0
             else:
                 heapq.heappush(self.heap_request, (cnt, dev))
+            print("Total %s seconds" % round((time.time() - start_pred),2))
         except:
             import traceback
             traceback.print_exc()
@@ -355,23 +360,30 @@ if __name__ == '__main__':
     vidfps = 35
 
     try:
-
+        start_time = time.time()
+        print("-------Processing Started --------")
         mp.set_start_method('forkserver')
         frameBuffer = mp.Queue(10)
         results = mp.Queue()
 
         # Start detection MultiStick
         # Activation of inferencer
+        start_ncs = time.time()
+        print("NCS Starting...")
         p = mp.Process(target=inferencer, args=(results, frameBuffer, number_of_ncs, camera_width, camera_height, vidfps), daemon=True)
         p.start()
         processes.append(p)
 
         sleep(number_of_ncs * 7)
+        print("ncs start+model_load %s seconds" % round((time.time() - start_ncs),2))
 
         # Start streaming
+        start_cam = time.time()
         p = mp.Process(target=camThread, args=(LABELS, results, frameBuffer, camera_width, camera_height, vidfps), daemon=True)
         p.start()
         processes.append(p)
+        print("camera streaming %s seconds" % round((time.time() - start_ncs),2))
+
 
         while True:
             sleep(1)
@@ -384,3 +396,4 @@ if __name__ == '__main__':
             processes[p].terminate()
 
         print("\n\nFinished\n\n")
+        print("Total %s seconds" % round((time.time() - start_time),2))
