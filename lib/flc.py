@@ -7,6 +7,9 @@ except:
 import multiprocessing as mp
 from time import sleep
 import threading
+from deep_sort import nn_matching, preprocessing
+from deep_sort.tracker import Tracker
+from tools import generate_detections as gdet
 
 yolo_scale_13 = 13
 yolo_scale_26 = 26
@@ -128,22 +131,22 @@ def camThread(LABELS, results, frameBuffer, camera_width, camera_height, vidfps)
     global cam
     global window_name
 
-    cam = cv2.VideoCapture(0)
-    if cam.isOpened() != True:
-        print("USB Camera Open Error!!!")
-        sys.exit(0)
-    cam.set(cv2.CAP_PROP_FPS, vidfps)
-    cam.set(cv2.CAP_PROP_FRAME_WIDTH, camera_width)
-    cam.set(cv2.CAP_PROP_FRAME_HEIGHT, camera_height)
-    window_name = "USB Camera"
-    wait_key_time = 1
-
-    #cam = cv2.VideoCapture("data/input/1.mp4")
-    #camera_width = int(cam.get(cv2.CAP_PROP_FRAME_WIDTH))
-    #camera_height = int(cam.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    #frame_count = int(cam.get(cv2.CAP_PROP_FRAME_COUNT))
-    #window_name = "Movie File"
-    #wait_key_time = int(1000 / vidfps)
+    #cam = cv2.VideoCapture(0)
+    #if cam.isOpened() != True:
+        #print("USB Camera Open Error!!!")
+        #sys.exit(0)
+    #cam.set(cv2.CAP_PROP_FPS, vidfps)
+    #cam.set(cv2.CAP_PROP_FRAME_WIDTH, camera_width)
+    #cam.set(cv2.CAP_PROP_FRAME_HEIGHT, camera_height)
+    #window_name = "USB Camera"
+    #wait_key_time = 1
+    nms_max_overlap=1.0
+    cam = cv2.VideoCapture("data/input/1.mp4")
+    camera_width = int(cam.get(cv2.CAP_PROP_FRAME_WIDTH))
+    camera_height = int(cam.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    frame_count = int(cam.get(cv2.CAP_PROP_FRAME_COUNT))
+    window_name = "Movie File"
+    wait_key_time = int(1000 / vidfps)
 
     cv2.namedWindow(window_name, cv2.WINDOW_AUTOSIZE)
 
@@ -170,6 +173,19 @@ def camThread(LABELS, results, frameBuffer, camera_width, camera_height, vidfps)
                     continue
                 label = obj.class_id
                 confidence = obj.confidence
+
+                classes = np.array([LABELS[label]])
+                scores = np.array([confidence*100], dtype=np.float64)
+                boxs = np.array([[obj.xmin, obj.ymin, obj.xmax, obj.ymax]])
+
+                print(scores, type(scores))
+                print(classes, type(classes))
+                print(boxs, type(boxs))
+                
+                indices = preprocessing.non_max_suppression(boxs, classes, nms_max_overlap, scores)
+                print(indices, type(indices))
+                #detections = [detections[i] for i in indices]
+
                 if confidence > 0.2:
                     label_text = LABELS[label] + " (" + "{:.1f}".format(confidence * 100) + "%)"
                     cv2.rectangle(color_image, (obj.xmin, obj.ymin), (obj.xmax, obj.ymax), box_color, box_thickness)
@@ -229,7 +245,7 @@ def async_infer(ncsworker):
     while True:
         ncsworker.predict_async()
 
-q
+
 class NcsWorker(object):
 
     def __init__(self, devid, frameBuffer, results, camera_width, camera_height, number_of_ncs, vidfps):
@@ -345,6 +361,16 @@ def inferencer(results, frameBuffer, number_of_ncs, camera_width, camera_height,
 
 
 if __name__ == '__main__':
+     # Definition of the parameters
+    max_cosine_distance = 0.5
+    nn_budget = None
+    nms_max_overlap = 1.0
+    
+    #initialize deep sort
+    model_filename = 'model_data/mars-small128.pb'
+    encoder = gdet.create_box_encoder(model_filename, batch_size=1)
+    metric = nn_matching.NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
+    tracker = Tracker(metric)
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-numncs','--numberofncs',dest='number_of_ncs',type=int,default=1,help='Number of NCS. (Default=1)')
